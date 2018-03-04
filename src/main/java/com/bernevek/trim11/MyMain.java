@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
  */
 public class MyMain {
     public static void main(String[] args) {
+        System.out.println("hello world");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 
         String[] command = null;
