@@ -9,14 +9,10 @@ public class ConsoleParser extends Thread {
     private BufferedReader bufferedReader;
     private String[] command = null;
     private Protocol protocol;
-    private MessageListner messageListner;
-    private ConnectionManager connectionManager;
 
-    public ConsoleParser(Protocol protocol, MessageListner messageListner, ConnectionManager connectionManager) {
+    public ConsoleParser(Protocol protocol) {
         this.bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         this.protocol = protocol;
-        this.messageListner = messageListner;
-        this.connectionManager = connectionManager;
     }
 
     @Override
@@ -45,8 +41,7 @@ public class ConsoleParser extends Thread {
                     }
                     case Protocol.EXIT: {
                         stop = true;
-                        messageListner.close();
-                        connectionManager.close();
+                        protocol.exit();
                         break;
                     }
                     case Protocol.LOGIN: {

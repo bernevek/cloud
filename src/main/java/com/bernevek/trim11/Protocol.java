@@ -1,8 +1,10 @@
 package com.bernevek.trim11;
 
-import org.apache.commons.lang3.ArrayUtils;
+import lpi.server.rmi.IServer;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Arrays;
 
 /**
@@ -23,22 +25,14 @@ public class Protocol {
     public static final String RECEIVE_FILE = "receive file";
 
 
-    private static final byte CMD_PING = 1;
-    private static final byte CMD_ECHO = 3;
-    private static final byte CMD_LOGIN = 5;
-    private static final byte CMD_LIST = 10;
-    private static final byte CMD_MSG = 15;
-    private static final byte CMD_FILE = 20;
-    private static final byte CMD_RECEIVE_MSG = 25;
-    private static final byte CMD_RECEIVE_FILE = 30;
 
     private ConnectionManager connectionManager;
-    private InputMessageParser inputMessageParser;
-    private byte executedComand;
+    private IServer proxy;
+    private String sessionId;
 
     public Protocol(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-        this.inputMessageParser = new InputMessageParser();
+        this.proxy = connectionManager.getProxy();
     }
 
     public void showAll() {
@@ -53,101 +47,47 @@ public class Protocol {
         System.out.println(Protocol.RECEIVE_FILE);
     }
 
-    public void echo(String text) throws IOException {
-        executedComand = CMD_ECHO;
-        connectionManager.send(ArrayUtils.addAll(new byte[]{CMD_ECHO}, text.getBytes()));
+    public void echo(String text) throws RemoteException {
+        String response = proxy.echo(text);
+        System.out.println(response);
     }
 
     public void ping() throws IOException {
-        connectionManager.send(new byte[]{CMD_PING});
+        proxy.ping();
     }
 
     public void login(String login, String password) throws IOException {
-        String[] loginData = {login, password};
-        connectionManager.send(ArrayUtils.addAll(new byte[]{CMD_LOGIN}, serialize(loginData)));
+        sessionId = proxy.login(login, password);
+        System.out.println("login ok");
     }
 
     public void list() throws IOException {
-        executedComand = CMD_LIST;
-        connectionManager.send(new byte[]{CMD_LIST});
+        String[] users = proxy.listUsers(sessionId);
+        System.out.println(Arrays.toString(users));
     }
 
     public void msg(String destinationUser, String message) throws IOException {
-        String[] messageData = {destinationUser, message};
-        connectionManager.send(ArrayUtils.addAll(new byte[]{CMD_MSG}, serialize(messageData)));
+        proxy.sendMessage(sessionId, new IServer.Message(destinationUser, message));
+        System.out.println("message sended ok");
     }
 
     public void file(String destinationUser, String filePath) throws IOException {
-        byte[] file;
-        try (FileInputStream stream = new FileInputStream(filePath)) {
-            file = new byte[stream.available()];
-            stream.read(file);
-        } catch (FileNotFoundException e) {
-            throw new IOException("File Not Found");
-        }
-        String[] pathArray = filePath.split("/");
-        Object[] fileData = {destinationUser, pathArray[pathArray.length - 1], file};
-        connectionManager.send(ArrayUtils.addAll(new byte[]{CMD_FILE}, serialize(fileData)));
+        File file = new File(filePath);
+        proxy.sendFile(sessionId, new IServer.FileInfo(destinationUser, file));
+        System.out.println("file sended ok");
     }
 
     public void receiveMsg() throws IOException {
-        executedComand = CMD_RECEIVE_MSG;
-        connectionManager.send(new byte[]{CMD_RECEIVE_MSG});
+        IServer.Message message = proxy.receiveMessage(sessionId);
+        System.out.println(message.getSender() + ": " + message.getMessage());
     }
 
     public void receiveFile() throws IOException {
-        executedComand = CMD_RECEIVE_FILE;
-        connectionManager.send(new byte[]{CMD_RECEIVE_FILE});
+        IServer.FileInfo fileInfo = proxy.receiveFile(sessionId);
+        System.out.println(fileInfo.getSender() + ": " + fileInfo.getFilename());
     }
 
-    public void parseComand(byte[] receivedMessage) {
-        inputMessageParser.parseComand(receivedMessage);
-    }
-
-    private byte[] serialize(Object object) throws IOException {
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
-            objectStream.writeObject(object);
-            return byteStream.toByteArray();
-        }
-    }
-
-    private <T> T deserialize(byte[] data, int offset, Class<T> clazz) throws ClassNotFoundException, IOException {
-        try (ByteArrayInputStream stream = new ByteArrayInputStream(data, offset, data.length - offset);
-             ObjectInputStream objectStream = new ObjectInputStream(stream)) {
-            return (T) objectStream.readObject();
-        }
-    }
-
-    public void parseAndShowMessage(byte[] inputArray) throws ClassNotFoundException {
-        try {
-            switch (executedComand) {
-                case Protocol.CMD_ECHO: {
-                    System.out.println(new String(inputArray));
-                    break;
-                }
-                case Protocol.CMD_LIST: {
-                    System.out.println("List");
-                    System.out.println(Arrays.toString(deserialize(inputArray, 0, String[].class)));
-                    break;
-                }
-                case Protocol.CMD_RECEIVE_MSG: {
-                    System.out.println("Message");
-                    System.out.println(Arrays.toString(deserialize(inputArray, 0, String[].class)));
-                    break;
-                }
-                case Protocol.CMD_RECEIVE_FILE: {
-                    System.out.println("File");
-                    System.out.println(Arrays.toString(deserialize(inputArray, 0, String[].class)));
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setExecutedComand(byte executedComand) {
-        this.executedComand = executedComand;
+    public void exit() throws IOException {
+        proxy.exit(sessionId);
     }
 }

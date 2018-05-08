@@ -1,58 +1,31 @@
 package com.bernevek.trim11;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
+import lpi.server.rmi.IServer;
+
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 public class ConnectionManager {
 
-    private Socket socket;
-    private DataInputStream dataInputStream;
-    private DataOutputStream dataOutputStream;
-
+    private Registry registry;
+    private IServer proxy;
     private String serverIp;
     private Integer serverPort;
 
-    public ConnectionManager(String serverIp, Integer serverPort) {
+    public ConnectionManager(String serverIp, Integer serverPort) throws RemoteException, NotBoundException {
         this.serverIp = serverIp;
         this.serverPort = serverPort;
+        registry = LocateRegistry.getRegistry(serverIp, serverPort);
+        proxy = (IServer) registry.lookup(IServer.RMI_SERVER_NAME);
     }
 
-    public void connect() throws IOException {
-        socket = new Socket(serverIp, serverPort);
-        dataInputStream = new DataInputStream(socket.getInputStream());
-        dataOutputStream = new DataOutputStream(socket.getOutputStream());
+    public Registry getRegistry() {
+        return registry;
     }
 
-    public void send(byte[] requestBody) throws IOException {
-        dataOutputStream.writeInt(requestBody.length);
-        dataOutputStream.write(requestBody);
-        dataOutputStream.flush();
-    }
-
-    public byte[] receive() throws IOException {
-        int responseLength = dataInputStream.readInt();
-        byte[] responseBody = new byte[responseLength];
-        dataInputStream.readFully(responseBody);
-        return responseBody;
-    }
-
-    public void close() {
-        try {
-            dataInputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            dataOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public IServer getProxy() {
+        return proxy;
     }
 }
