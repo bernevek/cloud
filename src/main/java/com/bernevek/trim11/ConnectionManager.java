@@ -1,31 +1,24 @@
 package com.bernevek.trim11;
 
-import lpi.server.rmi.IServer;
-
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import lpi.server.soap.ChatServer;
+import lpi.server.soap.IChatServer;
 
 public class ConnectionManager {
 
-    private Registry registry;
-    private IServer proxy;
-    private String serverIp;
-    private Integer serverPort;
+    private ChatServer serverWrapper;
+    private IChatServer serverProxy;
 
-    public ConnectionManager(String serverIp, Integer serverPort) throws RemoteException, NotBoundException {
-        this.serverIp = serverIp;
-        this.serverPort = serverPort;
-        registry = LocateRegistry.getRegistry(serverIp, serverPort);
-        proxy = (IServer) registry.lookup(IServer.RMI_SERVER_NAME);
+
+    public ConnectionManager() {
+        serverWrapper = new ChatServer();
+        serverProxy = serverWrapper.getChatServerProxy();
     }
 
-    public Registry getRegistry() {
-        return registry;
+    public ChatServer getServerWrapper() {
+        return serverWrapper;
     }
 
-    public IServer getProxy() {
-        return proxy;
+    public IChatServer getServerProxy() {
+        return serverProxy;
     }
 }

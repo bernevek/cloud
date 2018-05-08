@@ -1,11 +1,11 @@
 package com.bernevek.trim11;
 
-import lpi.server.rmi.IServer;
+import lpi.server.soap.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.Arrays;
+import java.nio.file.Files;
+import java.util.List;
 
 /**
  * Created by ivan on 24.02.18.
@@ -27,12 +27,12 @@ public class Protocol {
 
 
     private ConnectionManager connectionManager;
-    private IServer proxy;
+    private IChatServer proxy;
     private String sessionId;
 
     public Protocol(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-        this.proxy = connectionManager.getProxy();
+        this.proxy = connectionManager.getServerProxy();
     }
 
     public void showAll() {
@@ -47,47 +47,54 @@ public class Protocol {
         System.out.println(Protocol.RECEIVE_FILE);
     }
 
-    public void echo(String text) throws RemoteException {
+    public void echo(String text) {
         String response = proxy.echo(text);
         System.out.println(response);
     }
 
-    public void ping() throws IOException {
+    public void ping() {
         proxy.ping();
     }
 
-    public void login(String login, String password) throws IOException {
+    public void login(String login, String password) throws ArgumentFault, LoginFault, ServerFault {
         sessionId = proxy.login(login, password);
         System.out.println("login ok");
     }
 
-    public void list() throws IOException {
-        String[] users = proxy.listUsers(sessionId);
-        System.out.println(Arrays.toString(users));
+    public void list() throws ArgumentFault, ServerFault {
+        List<String> users = proxy.listUsers(sessionId);
+        users.forEach((user) -> System.out.println(user));
     }
 
-    public void msg(String destinationUser, String message) throws IOException {
-        proxy.sendMessage(sessionId, new IServer.Message(destinationUser, message));
+    public void msg(String destinationUser, String text) throws ArgumentFault, ServerFault {
+        Message message = new Message();
+        message.setReceiver(destinationUser);
+        message.setMessage(text);
+        proxy.sendMessage(sessionId, message);
         System.out.println("message sended ok");
     }
 
-    public void file(String destinationUser, String filePath) throws IOException {
+    public void file(String destinationUser, String filePath) throws ArgumentFault, ServerFault, IOException {
         File file = new File(filePath);
-        proxy.sendFile(sessionId, new IServer.FileInfo(destinationUser, file));
+        FileInfo fileInfo = new FileInfo();
+        fileInfo.setReceiver(destinationUser);
+        fileInfo.setFilename(file.getName());
+        fileInfo.setFileContent(Files.readAllBytes(file.toPath()));
+        proxy.sendFile(sessionId, fileInfo);
         System.out.println("file sended ok");
     }
 
-    public void receiveMsg() throws IOException {
-        IServer.Message message = proxy.receiveMessage(sessionId);
+    public void receiveMsg() throws ArgumentFault, ServerFault {
+        Message message = proxy.receiveMessage(sessionId);
         System.out.println(message.getSender() + ": " + message.getMessage());
     }
 
-    public void receiveFile() throws IOException {
-        IServer.FileInfo fileInfo = proxy.receiveFile(sessionId);
+    public void receiveFile() throws ArgumentFault, ServerFault {
+        FileInfo fileInfo = proxy.receiveFile(sessionId);
         System.out.println(fileInfo.getSender() + ": " + fileInfo.getFilename());
     }
 
-    public void exit() throws IOException {
+    public void exit() throws ArgumentFault, ServerFault {
         proxy.exit(sessionId);
     }
 }

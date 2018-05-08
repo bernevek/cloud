@@ -1,5 +1,9 @@
 package com.bernevek.trim11;
 
+import lpi.server.soap.ArgumentFault;
+import lpi.server.soap.LoginFault;
+import lpi.server.soap.ServerFault;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -91,6 +95,12 @@ public class ConsoleParser extends Thread {
                     default:
                         System.out.println("command not found");
                 }
+            } catch (ArgumentFault e) {
+                e.getFaultInfo();
+            } catch (ServerFault e) {
+                e.getFaultInfo();
+            } catch (LoginFault e) {
+                e.getFaultInfo();
             } catch (IOException e) {
                 e.printStackTrace();
             }

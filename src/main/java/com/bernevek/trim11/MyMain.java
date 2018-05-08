@@ -10,7 +10,7 @@ import java.rmi.NotBoundException;
  */
 public class MyMain {
     public static void main(String[] args) throws IOException, NotBoundException {
-        ConnectionManager connectionManager = new ConnectionManager("localhost", 4321);
+        ConnectionManager connectionManager = new ConnectionManager();
         Protocol protocol = new Protocol(connectionManager);
         ConsoleParser consoleParser = new ConsoleParser(protocol);
         consoleParser.start();
