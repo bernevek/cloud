@@ -1,24 +1,18 @@
 package com.bernevek.trim11;
 
-import lpi.server.soap.ChatServer;
-import lpi.server.soap.IChatServer;
+
+import javax.ws.rs.client.Client;
 
 public class ConnectionManager {
 
-    private ChatServer serverWrapper;
-    private IChatServer serverProxy;
+    private javax.ws.rs.client.Client client;
 
 
     public ConnectionManager() {
-        serverWrapper = new ChatServer();
-        serverProxy = serverWrapper.getChatServerProxy();
+        client = javax.ws.rs.client.ClientBuilder.newClient();
     }
 
-    public ChatServer getServerWrapper() {
-        return serverWrapper;
-    }
-
-    public IChatServer getServerProxy() {
-        return serverProxy;
+    public Client getClient() {
+        return client;
     }
 }
