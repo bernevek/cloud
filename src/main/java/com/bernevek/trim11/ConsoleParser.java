@@ -1,5 +1,6 @@
 package com.bernevek.trim11;
 
+import javax.jms.JMSException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -92,6 +93,8 @@ public class ConsoleParser extends Thread {
                         System.out.println("command not found");
                 }
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JMSException e) {
                 e.printStackTrace();
             }
         }

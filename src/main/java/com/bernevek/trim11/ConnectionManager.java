@@ -1,18 +1,39 @@
 package com.bernevek.trim11;
 
 
-import javax.ws.rs.client.Client;
+import org.apache.activemq.ActiveMQConnectionFactory;
+
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Session;
 
 public class ConnectionManager {
 
-    private javax.ws.rs.client.Client client;
+    private static org.apache.activemq.ActiveMQConnectionFactory connectionFactory
+            = new org.apache.activemq.ActiveMQConnectionFactory("tcp://localhost:61616");;
+    private javax.jms.Connection connection;
+    private javax.jms.Session session;
 
-
-    public ConnectionManager() {
-        client = javax.ws.rs.client.ClientBuilder.newClient();
+    public ConnectionManager() throws JMSException {
+        connection = connectionFactory.createConnection();
+        connection.start();
+        session = connection.createSession(false, javax.jms.Session.AUTO_ACKNOWLEDGE);
     }
 
-    public Client getClient() {
-        return client;
+    public void close() throws JMSException {
+        session.close();
+        connection.close();
+    }
+
+    public ActiveMQConnectionFactory getConnectionFactory() {
+        return connectionFactory;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public Session getSession() {
+        return session;
     }
 }
