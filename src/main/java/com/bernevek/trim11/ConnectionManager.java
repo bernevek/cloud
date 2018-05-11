@@ -14,6 +14,10 @@ public class ConnectionManager {
     private javax.jms.Connection connection;
     private javax.jms.Session session;
 
+    static {
+        connectionFactory.setTrustAllPackages(true);
+    }
+
     public ConnectionManager() throws JMSException {
         connection = connectionFactory.createConnection();
         connection.start();

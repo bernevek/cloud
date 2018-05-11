@@ -57,14 +57,6 @@ public class ConsoleParser extends Thread {
                         protocol.list();
                         break;
                     }
-                    case Protocol.RECEIVE: {
-                        if (command[1].equals(Protocol.RECEIVE_MSG.split(" ")[1])) {
-                            protocol.receiveMsg();
-                        } else {
-                            protocol.receiveFile();
-                        }
-                        break;
-                    }
                     case Protocol.SHOW_ALL: {
                         protocol.showAll();
                         break;

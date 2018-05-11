@@ -1,12 +1,15 @@
-package com.bernevek.trim11;
+package com.bernevek.trim11.Listeners;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.TextMessage;
 
-class MessageReceiver implements MessageListener {
+public class PingEchoMessageReceiver implements MessageListener {
+
     @SuppressWarnings("unchecked")
     @Override
     public void onMessage(Message message) {
-        System.out.println("00000000000000000000000000000000");
         if(message instanceof TextMessage) {
             TextMessage txtMsg = (TextMessage) message;
             try {
