@@ -41,27 +41,6 @@ public class ConsoleParser extends Thread {
                     }
                     case Protocol.EXIT: {
                         stop = true;
-                        protocol.exit();
-                        break;
-                    }
-                    case Protocol.LOGIN: {
-                        if (command.length == 3) {
-                            protocol.login(command[1], command[2]);
-                        } else {
-                            System.out.println("command is incorrect");
-                        }
-                        break;
-                    }
-                    case Protocol.LIST: {
-                        protocol.list();
-                        break;
-                    }
-                    case Protocol.RECEIVE: {
-                        if (command[1].equals(Protocol.RECEIVE_MSG.split(" ")[1])) {
-                            protocol.receiveMsg();
-                        } else {
-                            protocol.receiveFile();
-                        }
                         break;
                     }
                     case Protocol.SHOW_ALL: {
@@ -72,20 +51,8 @@ public class ConsoleParser extends Thread {
                         protocol.ping();
                         break;
                     }
-                    case Protocol.MSG: {
-                        if (command.length == 3) {
-                            protocol.msg(command[1], command[2]);
-                        } else {
-                            System.out.println("command is incorrect");
-                        }
-                        break;
-                    }
-                    case Protocol.FILE: {
-                        if (command.length == 3) {
-                            protocol.file(command[1], command[2]);
-                        } else {
-                            System.out.println("command is incorrect");
-                        }
+                    case Protocol.PROCESS: {
+                        protocol.process("", "");
                         break;
                     }
                     default:
